@@ -66,7 +66,7 @@
     "better-sqlite3": "^9.4.1",
     "discord.js": "^14.14.1",
     "dotenv": "^16.4.5",
-    "ethers": "^5.7.2",
+    "ethers": "^6.11.1",
     "sql-formatter": "^15.2.0"
   }
 }
