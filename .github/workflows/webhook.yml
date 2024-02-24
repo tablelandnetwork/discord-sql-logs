@@ -34,6 +34,10 @@ jobs:
       - name: Run app & post SQL logs to Discord
         run: |
           npm run start
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_WEBHOOK_ID: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          DISCORD_WEBHOOK_TOKEN: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
