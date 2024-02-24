@@ -1,5 +1,5 @@
 import { type Database } from "better-sqlite3";
-import { type State } from "./utils";
+import { type State } from "./utils.js";
 
 // Insert the latest blocks processed by each chain into the SQLite `state` table.
 export function insertStateLatestBlocks(db: Database, state: State[]): void {

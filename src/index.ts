@@ -1,10 +1,10 @@
 import Database from "better-sqlite3";
-import { Events, Client, GatewayIntentBits } from "discord.js";
+import { Client, Events, GatewayIntentBits } from "discord.js";
 import dotenv from "dotenv";
-import { getTblLatestBlocksByChain, getTblNewSqlLogs } from "./tbl";
-import { getStateMaxBlockNumbers, insertStateLatestBlocks } from "./db";
-import { buildDiscordEmbeds, sendEventsToWebhook } from "./discord";
-import { findStateDiff, getBlockRangeForSqlLogs } from "./utils";
+import { getStateMaxBlockNumbers, insertStateLatestBlocks } from "./db.js";
+import { buildDiscordEmbeds, sendEventsToWebhook } from "./embed.js";
+import { getTblLatestBlocksByChain, getTblNewSqlLogs } from "./tbl.js";
+import { findStateDiff, getBlockRangeForSqlLogs } from "./utils.js";
 dotenv.config();
 
 // Set up Discord client and ensure env vars are set up
