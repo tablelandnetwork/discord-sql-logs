@@ -6,16 +6,7 @@
     "access": "public"
   },
   "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "require": "./dist/index.js",
-      "import": "./dist/index.js",
-      "default": "./dist/index.js"
-    }
-  },
+  "types": "./dist/*.d.ts",
   "files": [
     "dist/**/*.js?(.map)",
     "dist/**/*.d.ts",

@@ -1,6 +1,6 @@
-import type { ChainType, BlockRange, State, SqlLogsData } from "./utils";
-import { fetchWithRetry } from "./utils";
 import { helpers } from "@tableland/sdk";
+import type { BlockRange, ChainType, SqlLogsData, State } from "./utils.js";
+import { fetchWithRetry } from "./utils.js";
 
 // Set up SQL statement for getting the latest blocks processed by each chain.
 // Note they will differ between testnet and mainnet to remove old testnet

@@ -1,14 +1,14 @@
 import { format } from "sql-formatter";
+import { helpers } from "@tableland/sdk";
 import {
+  type Webhook,
   EmbedBuilder,
   bold,
   codeBlock,
   hyperlink,
-  type Webhook,
 } from "discord.js";
-import type { SqlLogsData } from "./utils";
-import { truncate } from "./utils";
-import { helpers } from "@tableland/sdk";
+import type { SqlLogsData } from "./utils.js";
+import { truncate } from "./utils.js";
 
 // Build Discord embeds for each Tableland SQL log processed.
 export function buildDiscordEmbeds(logs: SqlLogsData[]): EmbedBuilder[] {
