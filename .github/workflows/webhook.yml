@@ -1,4 +1,4 @@
-name: Publish
+name: SQL logs webhook
 on:
   workflow_dispatch:
   schedule:
