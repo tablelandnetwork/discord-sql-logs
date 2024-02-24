@@ -1,17 +1,23 @@
+// Defines the interface for `state` table and associated types.
 export interface State {
   chain_id: number;
   block_number: number;
   timestamp: number;
 }
 
+// Defines the range for how the latest state and most recent state diff
+// compare.
 export type BlockRange = Pick<State, "chain_id" | "block_number"> & {
   prev_block_number: number;
 };
 
+// Defines the chain type for the mainnets or testnets to dictate a base URL.
 export type ChainType = "mainnet" | "testnet";
 
+// Defines the event type for SQL logs to parse.
 export type SqlEventType = "ContractCreateTable" | "ContractRunSQL";
 
+// Defines the data for SQL logs to be used in Discord embeds.
 export interface SqlLogsData {
   chain_id: number;
   block_number: number;
@@ -25,6 +31,8 @@ export interface SqlLogsData {
   error?: string;
 }
 
+// Returns the difference between the previous state and the next state
+// retrieved from a validator node's latest processed events.
 export function findStateDiff(
   previousState: State[],
   nextState: State[]
@@ -40,6 +48,8 @@ export function findStateDiff(
   );
 }
 
+// Returns the block range for SQL logs to be used in SQL queries and ensure
+// only new events are posted to Discord.
 export function getBlockRangeForSqlLogs(
   previousState: State[],
   diff: State[]
@@ -62,6 +72,7 @@ export function getBlockRangeForSqlLogs(
   return extendedDiff;
 }
 
+// Fetches data from a URL and retries if the response is a 429.
 export async function fetchWithRetry(url: string, retries = 5, backoff = 300) {
   try {
     const response = await fetch(url);
@@ -80,6 +91,7 @@ export async function fetchWithRetry(url: string, retries = 5, backoff = 300) {
   }
 }
 
+// Truncates a string to a specified length (needed for Discord embeds).
 export function truncate(str: string, len: number): string {
   return str.length > len ? str.substring(0, len) + "..." : str;
 }
