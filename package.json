@@ -1,0 +1,72 @@
+{
+  "name": "@tableland/ts-template",
+  "version": "0.0.0",
+  "description": "A template for @tableland TypeScript projects",
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/**/*.js?(.map)",
+    "dist/**/*.d.ts",
+    "src/**/*.ts"
+  ],
+  "scripts": {
+    "build": "npx tsc",
+    "start": "node dist/index.js",
+    "create-db": "sqlite3 data/state.db < data/schema.sql",
+    "lint": "eslint '**/*.{js,ts}'",
+    "lint:fix": "npm run lint -- --fix",
+    "prettier": "prettier '**/*.{js,ts,json,md}' --check",
+    "prettier:fix": "npm run prettier -- --write",
+    "format": "npm run prettier:fix && npm run lint:fix",
+    "prepublishOnly": "npm run build",
+    "test": "mocha",
+    "coverage": "c8 mocha --exit",
+    "clean": "rm -rf dist coverage"
+  },
+  "keywords": [
+    "tableland",
+    "sql",
+    "ethereum",
+    "database"
+  ],
+  "license": "MIT AND Apache-2.0",
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.9",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^18.11.18",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "c8": "^7.12.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-config-standard-with-typescript": "^43.0.1",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-n": "^15.7.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "mocha": "^10.2.0",
+    "prettier": "^3.0.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@tableland/sdk": "^5.2.0",
+    "better-sqlite3": "^9.4.1",
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.4.5",
+    "ethers": "^5.7.2",
+    "sql-formatter": "^15.2.0"
+  }
+}
