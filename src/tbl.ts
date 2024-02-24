@@ -2,6 +2,9 @@ import type { ChainType, BlockRange, State, SqlLogsData } from "./utils";
 import { fetchWithRetry } from "./utils";
 import { helpers } from "@tableland/sdk";
 
+// Set up SQL statement for getting the latest blocks processed by each chain.
+// Note they will differ between testnet and mainnet to remove old testnet
+// chains.
 const sqlLatestBlocksByChain = (type: ChainType): string => {
   if (type === "testnet") {
     // Ignore deprecated testnet chains
@@ -33,6 +36,7 @@ const sqlLatestBlocksByChain = (type: ChainType): string => {
   }
 };
 
+// Get the latest blocks processed by each chain.
 export const getTblLatestBlocksByChain = async (): Promise<State[]> => {
   const testnetsUrl = helpers.getBaseUrl(80001);
   const mainnetsUrl = helpers.getBaseUrl(1);
@@ -48,6 +52,9 @@ export const getTblLatestBlocksByChain = async (): Promise<State[]> => {
   return [...testnets, ...mainnets];
 };
 
+// Set up SQL statement for getting the latest SQL logs for each chain. The data
+// returned will be used to check for new SQL logs and remove unnecessary
+// healthbot updates and also dictate Discord post formatting.
 const sqlGetNewSqlLogs = (range: BlockRange) =>
   encodeURIComponent(`
     SELECT
@@ -69,6 +76,8 @@ const sqlGetNewSqlLogs = (range: BlockRange) =>
       block_number ASC;
   `);
 
+// Check if there was an error in the query, which changes which variables will
+// be defined in the Discord post.
 async function checkStatementErrors(
   log: SqlLogsData
 ): Promise<string | undefined> {
@@ -79,6 +88,8 @@ async function checkStatementErrors(
   return error;
 }
 
+// Get the table name from the table ID—and if a 404 occurs, assume a table
+// creation error.
 async function getTableName(
   baseUrl: string,
   chainId: number,
@@ -96,6 +107,7 @@ async function getTableName(
   }
 }
 
+// Extract SQL logs from the query response and format them for Discord posts.
 async function extractSqlLogsFromQuery(
   response: Response,
   baseUrl: string
@@ -132,6 +144,7 @@ async function extractSqlLogsFromQuery(
   return data;
 }
 
+// Get the latest SQL logs for each chain.
 export async function getTblNewSqlLogs(
   ranges: BlockRange[]
 ): Promise<SqlLogsData[]> {
