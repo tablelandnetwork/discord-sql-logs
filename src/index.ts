@@ -1,25 +1,19 @@
 import Database from "better-sqlite3";
 import { Client, Events, GatewayIntentBits } from "discord.js";
-import dotenv from "dotenv";
 import { getStateMaxBlockNumbers, insertStateLatestBlocks } from "./db.js";
 import { buildDiscordEmbeds, sendEventsToWebhook } from "./embed.js";
 import { getTblLatestBlocksByChain, getTblNewSqlLogs } from "./tbl.js";
-import { findStateDiff, getBlockRangeForSqlLogs } from "./utils.js";
-dotenv.config();
+import { findStateDiff, getBlockRangeForSqlLogs, getEnvVars } from "./utils.js";
 
 // Set up Discord client and ensure env vars are set up
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
-const { DISCORD_WEBHOOK_ID, DISCORD_WEBHOOK_TOKEN, DISCORD_BOT_TOKEN } =
-  process.env;
-if (
-  DISCORD_WEBHOOK_ID == null ||
-  DISCORD_WEBHOOK_TOKEN == null ||
-  DISCORD_BOT_TOKEN == null
-) {
-  throw new Error(
-    "DISCORD_WEBHOOK_ID, DISCORD_WEBHOOK_TOKEN, or DISCORD_BOT_TOKEN is not defined"
-  );
-}
+const {
+  DISCORD_WEBHOOK_ID_INTERNAL, // Only post internal core Tableland logs
+  DISCORD_WEBHOOK_TOKEN_INTERNAL,
+  DISCORD_WEBHOOK_ID_EXTERNAL, // Post logs from community devs
+  DISCORD_WEBHOOK_TOKEN_EXTERNAL,
+  DISCORD_BOT_TOKEN,
+} = getEnvVars();
 
 // Create a connection to the local SQLite database that stores the latest run
 // information and the latest blocks processed by each chain.
@@ -38,18 +32,25 @@ client.once(Events.ClientReady, async () => {
     const blockRanges = getBlockRangeForSqlLogs(previousState, diff);
     const sqlLogs = await getTblNewSqlLogs(blockRanges);
     // Exit if no logs (e.g., only found healthbot updates, but discarded)
-    if (sqlLogs.length === 0) return;
+    if (sqlLogs.internal.length === 0 || sqlLogs.external.length === 0) return;
 
-    // Fetch the Discord webhook and send the SQL logs as embeds
-    const webhook = await client.fetchWebhook(
-      DISCORD_WEBHOOK_ID,
-      DISCORD_WEBHOOK_TOKEN
+    // Fetch the Discord webhooks and send the SQL logs as embeds, separating
+    // internal logs from external logs on different webhooks
+    const webhookInternal = await client.fetchWebhook(
+      DISCORD_WEBHOOK_ID_INTERNAL,
+      DISCORD_WEBHOOK_TOKEN_INTERNAL
     );
-    if (webhook == null) {
+    const webhookExternal = await client.fetchWebhook(
+      DISCORD_WEBHOOK_ID_EXTERNAL,
+      DISCORD_WEBHOOK_TOKEN_EXTERNAL
+    );
+    if (webhookInternal == null || webhookExternal == null) {
       throw new Error("No webhook found");
     }
-    const embeds = buildDiscordEmbeds(sqlLogs);
-    await sendEventsToWebhook(webhook, embeds);
+    const internalEmbeds = buildDiscordEmbeds(sqlLogs.internal);
+    const externalEmbeds = buildDiscordEmbeds(sqlLogs.external);
+    await sendEventsToWebhook(webhookInternal, internalEmbeds);
+    await sendEventsToWebhook(webhookExternal, externalEmbeds);
   } catch (err) {
     console.error("Error executing app: ", err);
   }
