@@ -36,8 +36,11 @@ jobs:
           npm run start
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
-          DISCORD_WEBHOOK_ID: ${{ secrets.DISCORD_WEBHOOK_ID }}
-          DISCORD_WEBHOOK_TOKEN: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+          DISCORD_WEBHOOK_ID_INTERNAL: ${{ secrets.DISCORD_WEBHOOK_ID_INTERNAL }}
+          DISCORD_WEBHOOK_TOKEN_INTERNAL: ${{ secrets.DISCORD_WEBHOOK_TOKEN_INTERNAL }}
+          DISCORD_WEBHOOK_ID_EXTERNAL: ${{ secrets.DISCORD_WEBHOOK_ID_EXTERNAL }}
+          DISCORD_WEBHOOK_TOKEN_EXTERNAL: ${{ secrets.DISCORD_WEBHOOK_TOKEN_EXTERNAL }}
+
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
