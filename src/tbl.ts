@@ -1,5 +1,11 @@
 import { helpers } from "@tableland/sdk";
-import type { BlockRange, ChainType, SqlLogsData, State } from "./utils.js";
+import type {
+  BlockRange,
+  ChainType,
+  SqlLogsData,
+  SqlLogsQueryResponse,
+  State,
+} from "./utils.js";
 import { fetchWithRetry } from "./utils.js";
 
 // Set up SQL statement for getting the latest blocks processed by each chain.
@@ -10,26 +16,26 @@ const sqlLatestBlocksByChain = (type: ChainType): string => {
     // Ignore deprecated testnet chains
     return encodeURIComponent(`
       SELECT
-        chain_id,
-        max(block_number) as block_number,
+        chain_id as chainId,
+        max(block_number) as blockNumber,
         timestamp
       FROM
         system_evm_blocks
       WHERE 
-        chain_id != 421613 AND chain_id != 5 AND chain_id != 3141
+        chainId != 421613 AND chainId != 5 AND chainId != 3141
       GROUP BY
-        chain_id;
+        chainId;
     `);
   } else if (type === "mainnet") {
     return encodeURIComponent(`
       SELECT
-        chain_id,
-        max(block_number) as block_number,
+        chain_id as chainId,
+        max(block_number) as blockNumber,
         timestamp
       FROM
         system_evm_blocks
       GROUP BY
-        chain_id;
+        chainId;
     `);
   } else {
     throw new Error("Invalid chain type");
@@ -55,25 +61,25 @@ export const getTblLatestBlocksByChain = async (): Promise<State[]> => {
 // Set up SQL statement for getting the latest SQL logs for each chain. The data
 // returned will be used to check for new SQL logs and remove unnecessary
 // healthbot updates and also dictate Discord post formatting.
-const sqlGetNewSqlLogs = (range: BlockRange) =>
+const sqlGetNewSqlLogs = (range: BlockRange): string =>
   encodeURIComponent(`
     SELECT
-      chain_id,
-      block_number,
-      tx_hash,
-      event_type,
+      chain_id as chainId,
+      block_number as blockNumber,
+      tx_hash as txHash,
+      event_type as eventType,
       json_extract(event_json,'$.Caller') as caller,
-      json_extract(event_json,'$.TableId') as table_id,
+      json_extract(event_json,'$.TableId') as tableId,
       json_extract(event_json,'$.Statement') as statement
     FROM
       system_evm_events
     WHERE 
-      block_number > ${range.prev_block_number} AND 
-      block_number <= ${range.block_number} AND 
-      chain_id = ${range.chain_id} AND
-      (event_type = 'ContractCreateTable' OR event_type = 'ContractRunSQL')
+      blockNumber > ${range.prevBlockNumber} AND 
+      blockNumber <= ${range.blockNumber} AND 
+      chainId = ${range.chainId} AND
+      (eventType = 'ContractCreateTable' OR eventType = 'ContractRunSQL')
     ORDER BY
-      block_number ASC;
+      blockNumber ASC;
   `);
 
 // Check if there was an error in the query, which changes which variables will
@@ -82,7 +88,7 @@ async function checkStatementErrors(
   log: SqlLogsData
 ): Promise<string | undefined> {
   const response = await fetchWithRetry(
-    `${log.base_url}/receipt/${log.chain_id}/${log.tx_hash}`
+    `${log.baseUrl}/receipt/${log.chainId}/${log.txHash}`
   );
   const { error } = await response.json();
   return error;
@@ -109,29 +115,24 @@ async function getTableName(
 
 // Extract SQL logs from the query response and format them for Discord posts.
 async function extractSqlLogsFromQuery(
-  response: Response,
+  response: SqlLogsQueryResponse[],
   baseUrl: string
 ): Promise<SqlLogsData[]> {
-  const json = await response.json();
   const data = [];
-  for await (const item of json) {
+  for await (const item of response) {
     // Ignore healthbot table updates
-    if (!item.statement.match(/update healthbot/)) {
-      const tableName = await getTableName(
-        baseUrl,
-        item.chain_id,
-        item.table_id
-      );
+    if (item.statement.match(/update healthbot/) === null) {
+      const tableName = await getTableName(baseUrl, item.chainId, item.tableId);
       const log: SqlLogsData = {
-        chain_id: item.chain_id,
-        block_number: item.block_number,
-        tx_hash: item.tx_hash,
-        event_type: item.event_type,
+        chainId: item.chainId,
+        blockNumber: item.blockNumber,
+        txHash: item.txHash,
+        eventType: item.eventType,
         caller: item.caller !== null ? item.caller : undefined, // Make sure `null` mapped to `undefined`
-        table_id: item.table_id,
-        table_name: tableName,
+        tableId: item.tableId,
+        tableName,
         statement: item.statement,
-        base_url: baseUrl,
+        baseUrl,
       };
       // Check if there was an error in the query
       const error = await checkStatementErrors(log);
@@ -150,11 +151,12 @@ export async function getTblNewSqlLogs(
 ): Promise<SqlLogsData[]> {
   const logs = [];
   for (const range of ranges) {
-    const baseUrl = helpers.getBaseUrl(range.chain_id);
+    const baseUrl = helpers.getBaseUrl(range.chainId);
     const response = await fetch(
       `${baseUrl}/query?statement=${sqlGetNewSqlLogs(range)}`
     );
-    const data = await extractSqlLogsFromQuery(response, baseUrl);
+    const json: SqlLogsQueryResponse[] = await response.json();
+    const data = await extractSqlLogsFromQuery(json, baseUrl);
     logs.push(...data);
   }
   return logs;

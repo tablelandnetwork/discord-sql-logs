@@ -26,42 +26,42 @@ export function buildDiscordEmbeds(logs: SqlLogsData[]): EmbedBuilder[] {
     const embedFields = [
       {
         name: "Chain",
-        value: helpers.getChainInfo(log.chain_id).chainName,
+        value: helpers.getChainInfo(log.chainId).chainName,
         inline: true,
       },
       {
         name: "Table ID",
         value: hyperlink(
-          String(log.table_id),
-          `${log.base_url}/tables/${log.chain_id}/${log.table_id}`
+          String(log.tableId),
+          `${log.baseUrl}/tables/${log.chainId}/${log.tableId}`
         ),
         inline: true,
       },
       {
         name: "Table Name",
-        value: log.table_name !== undefined ? String(log.table_name) : "N/A",
+        value: log.tableName !== undefined ? String(log.tableName) : "N/A",
         inline: true,
       },
       {
         name: "Block",
-        value: String(log.block_number),
+        value: String(log.blockNumber),
         inline: true,
       },
       {
         name: "Transaction",
         value: hyperlink(
-          log.tx_hash,
-          `${log.base_url}/receipt/${log.chain_id}/${log.tx_hash}`
+          log.txHash,
+          `${log.baseUrl}/receipt/${log.chainId}/${log.txHash}`
         ),
         inline: true,
       },
       {
         name: bold("Caller"),
-        value: log.caller !== undefined ? log.caller : "N/A",
+        value: log.caller ?? "N/A",
         inline: true,
       },
       {
-        name: `Statement (${log.event_type === "ContractCreateTable" ? "table creation" : "mutating query"})`,
+        name: `Statement (${log.eventType === "ContractCreateTable" ? "table creation" : "mutating query"})`,
         value: statement,
       },
       {
@@ -79,7 +79,7 @@ export function buildDiscordEmbeds(logs: SqlLogsData[]): EmbedBuilder[] {
             name: "\n",
             value: `${bold("Inspect table data:")} ${hyperlink(
               "here",
-              `${log.base_url}/query?statement=select%20*%20from%20${log.table_name}%20limit%205`
+              `${log.baseUrl}/query?statement=select%20*%20from%20${log.tableName}%20limit%205`
             )}`,
           };
     embedFields.splice(embedFields.length - 1, 0, embedQueryLinkOrError);
