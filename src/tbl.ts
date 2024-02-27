@@ -2,11 +2,12 @@ import { helpers } from "@tableland/sdk";
 import type {
   BlockRange,
   ChainType,
+  FilteredLogGroups,
   SqlLogsData,
   SqlLogsQueryResponse,
   State,
 } from "./utils.js";
-import { fetchWithRetry } from "./utils.js";
+import { fetchWithRetry, checkTableInFilterList } from "./utils.js";
 
 // Set up SQL statement for getting the latest blocks processed by each chain.
 // Note they will differ between testnet and mainnet to remove old testnet
@@ -113,16 +114,25 @@ async function getTableName(
   }
 }
 
+function isInternalLog(log: SqlLogsData): boolean {
+  // Assume table creation errors are external issues
+  if (log.tableName === undefined) return false;
+  const shouldFilter = checkTableInFilterList(log.tableName);
+  return shouldFilter;
+}
+
 // Extract SQL logs from the query response and format them for Discord posts.
 async function extractSqlLogsFromQuery(
   response: SqlLogsQueryResponse[],
   baseUrl: string
-): Promise<SqlLogsData[]> {
-  const data = [];
+): Promise<FilteredLogGroups> {
+  const internalLogs = [];
+  const externalLogs = [];
   for await (const item of response) {
     // Ignore healthbot table updates
     if (item.statement.match(/update healthbot/) === null) {
       const tableName = await getTableName(baseUrl, item.chainId, item.tableId);
+
       const log: SqlLogsData = {
         chainId: item.chainId,
         blockNumber: item.blockNumber,
@@ -139,25 +149,39 @@ async function extractSqlLogsFromQuery(
       if (error !== undefined) {
         log.error = error;
       }
-      data.push(log);
+      const isInternal = isInternalLog(log);
+      isInternal ? internalLogs.push(log) : externalLogs.push(log);
     }
   }
-  return data;
+  return { internal: internalLogs, external: externalLogs };
 }
 
 // Get the latest SQL logs for each chain.
 export async function getTblNewSqlLogs(
   ranges: BlockRange[]
-): Promise<SqlLogsData[]> {
-  const logs = [];
+): Promise<FilteredLogGroups> {
+  const logs: FilteredLogGroups[] = [];
   for (const range of ranges) {
     const baseUrl = helpers.getBaseUrl(range.chainId);
     const response = await fetch(
       `${baseUrl}/query?statement=${sqlGetNewSqlLogs(range)}`
     );
     const json: SqlLogsQueryResponse[] = await response.json();
-    const data = await extractSqlLogsFromQuery(json, baseUrl);
-    logs.push(...data);
+    const data: FilteredLogGroups = await extractSqlLogsFromQuery(
+      json,
+      baseUrl
+    );
+    logs.push(data);
   }
-  return logs;
+
+  const combinedLogs = logs.reduce<FilteredLogGroups>(
+    (acc, logGroup) => {
+      acc.internal = acc.internal.concat(logGroup.internal);
+      acc.external = acc.external.concat(logGroup.external);
+      return acc;
+    },
+    { internal: [], external: [] }
+  );
+
+  return combinedLogs;
 }
