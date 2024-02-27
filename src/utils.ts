@@ -184,7 +184,7 @@ const tableLogsFilterList = [
   "options_42161_22",
   "missions_42161_23",
   "mission_contributions_42161_24",
-  // Studio testnet
+  // Studio testnet (legacy)
   "migrations_421614_2",
   "deployments_421614_3",
   "environments_421614_4",
@@ -196,6 +196,18 @@ const tableLogsFilterList = [
   "team_projects_421614_10",
   "teams_421614_11",
   "users_421614_12",
+  // Studio testnet (new)
+  "migrations_421614_453",
+  "deployments_421614_454",
+  "environments_421614_455",
+  "project_tables_421614_456",
+  "projects_421614_457",
+  "tables_421614_458",
+  "team_invites_421614_459",
+  "team_memberships_421614_460",
+  "team_projects_421614_461",
+  "teams_421614_462",
+  "users_421614_463",
   // Studio mainnet
   "migrations_42170_7",
   "deployments_42170_8",
