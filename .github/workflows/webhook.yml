@@ -46,3 +46,6 @@ jobs:
         with:
           commit_message: "chore: new sql logs → update db state"
           file_pattern: "data/state.db"
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "github-actions[bot]@users.noreply.github.com"
+          commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
