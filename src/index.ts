@@ -2,7 +2,11 @@ import { join } from "path";
 import Database from "better-sqlite3";
 import { Client, Events, GatewayIntentBits } from "discord.js";
 import { writeFileToVault, Signer, bytesToHex } from "./basin.js";
-import { getStateMaxBlockNumbers, insertStateLatestBlocks } from "./db.js";
+import {
+  getStateBlockNumbers,
+  insertStateLatestBlocks,
+  updateStateLatestBlocks,
+} from "./db.js";
 import { buildDiscordEmbeds, sendEventsToWebhook } from "./embed.js";
 import { getTblLatestBlocksByChain, getTblNewSqlLogs } from "./tbl.js";
 import { findStateDiff, getBlockRangeForSqlLogs, getEnvVars } from "./utils.js";
@@ -34,24 +38,27 @@ const db = new Database(dbPath, { verbose: console.log });
 client.once(Events.ClientReady, async () => {
   try {
     // Get the previous state and the next state from the validator node
-    const previousState = getStateMaxBlockNumbers(db);
+    const previousState = getStateBlockNumbers(db);
+    // Get next state and find the difference w/ previous state
     const nextState = await getTblLatestBlocksByChain();
-    // Find the difference b/w the previous and next state & insert into db
     const diff = findStateDiff(previousState, nextState);
-    insertStateLatestBlocks(db, diff);
-    // Get the block ranges for SQL logs to be used in getting new SQL logs
+    // If previous state exists, then update data, else insert it
+    if (previousState.length !== 0) {
+      updateStateLatestBlocks(db, diff);
+    } else {
+      insertStateLatestBlocks(db, diff);
+      // Write the latest db state to the vault & exit early since no new logs
+      const signatureBytes = await signer.signFile(dbPath);
+      const signature = bytesToHex(signatureBytes);
+      await writeFileToVault(vault, dbPath, signature);
+      return;
+    }
+    // Get the block ranges for to get new SQL logs
     const blockRanges = getBlockRangeForSqlLogs(previousState, diff);
     const sqlLogs = await getTblNewSqlLogs(blockRanges);
-    // Exit early if no logs (e.g., only found healthbot updates) or if
-    if (sqlLogs.internal.length === 0 && sqlLogs.external.length === 0) {
-      // If no previous state, then vault is empty—write the latest db state
-      if (previousState.length === 0) {
-        const signatureBytes = await signer.signFile(dbPath);
-        const signature = bytesToHex(signatureBytes);
-        await writeFileToVault(vault, dbPath, signature);
-      }
-      return; // Exit early
-    }
+    // Exit early if no logs (e.g., only found healthbot updates)—no need to
+    // write the latest db state to the vault and send the logs to Discord
+    if (sqlLogs.internal.length === 0 && sqlLogs.external.length === 0) return;
 
     // Fetch the Discord webhooks and send the SQL logs as embeds, separating
     // internal logs from external logs on different webhooks
@@ -71,7 +78,7 @@ client.once(Events.ClientReady, async () => {
     await sendEventsToWebhook(webhookInternal, internalEmbeds);
     await sendEventsToWebhook(webhookExternal, externalEmbeds);
 
-    // Write the latest db state do the vault as an event
+    // Write the latest db state to the vault as an event
     const signatureBytes = await signer.signFile(dbPath);
     const signature = bytesToHex(signatureBytes);
     await writeFileToVault(vault, dbPath, signature);

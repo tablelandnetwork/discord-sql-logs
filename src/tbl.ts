@@ -39,7 +39,7 @@ const sqlLatestBlocksByChain = (type: ChainType): string => {
         chainId;
     `);
   } else {
-    throw new Error("Invalid chain type");
+    throw new Error("invalid chain type");
   }
 };
 

@@ -235,7 +235,12 @@ export async function downloadStateDbFromEvent(
   const response = await fetch(url);
 
   if (!response.ok) {
-    throw new Error(`HTTP error: ${response.status} ${response.statusText}`);
+    if (response.status === 404) {
+      // A 404 likely means the event cache expired and not accessible over API
+      throw new Error("event not found or cache expired");
+    } else {
+      throw new Error(`HTTP error: ${response.status} ${response.statusText}`);
+    }
   }
 
   const writableStream = new WritableStream({
