@@ -3,8 +3,6 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "*/15 * * * *" # Runs every 15 minutes
-permissions:
-  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -40,12 +38,4 @@ jobs:
           DISCORD_WEBHOOK_TOKEN_INTERNAL: ${{ secrets.DISCORD_WEBHOOK_TOKEN_INTERNAL }}
           DISCORD_WEBHOOK_ID_EXTERNAL: ${{ secrets.DISCORD_WEBHOOK_ID_EXTERNAL }}
           DISCORD_WEBHOOK_TOKEN_EXTERNAL: ${{ secrets.DISCORD_WEBHOOK_TOKEN_EXTERNAL }}
-
-      - name: Commit changes
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: "chore: new sql logs → update db state"
-          file_pattern: "data/state.db"
-          commit_user_name: "github-actions[bot]"
-          commit_user_email: "github-actions[bot]@users.noreply.github.com"
-          commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}

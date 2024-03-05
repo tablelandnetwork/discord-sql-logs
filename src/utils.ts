@@ -59,13 +59,15 @@ export const getEnvVars = (): Record<string, string> => {
     DISCORD_WEBHOOK_ID_EXTERNAL, // Post logs from community devs
     DISCORD_WEBHOOK_TOKEN_EXTERNAL,
     DISCORD_BOT_TOKEN,
+    PRIVATE_KEY,
   } = process.env;
   if (
     DISCORD_WEBHOOK_ID_INTERNAL == null ||
     DISCORD_WEBHOOK_TOKEN_INTERNAL == null ||
     DISCORD_WEBHOOK_ID_EXTERNAL == null ||
     DISCORD_WEBHOOK_TOKEN_EXTERNAL == null ||
-    DISCORD_BOT_TOKEN == null
+    DISCORD_BOT_TOKEN == null ||
+    PRIVATE_KEY == null
   ) {
     throw new Error("Discord environment variables not set");
   } else {
@@ -75,6 +77,7 @@ export const getEnvVars = (): Record<string, string> => {
       DISCORD_WEBHOOK_ID_EXTERNAL,
       DISCORD_WEBHOOK_TOKEN_EXTERNAL,
       DISCORD_BOT_TOKEN,
+      PRIVATE_KEY,
     };
   }
 };

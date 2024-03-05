@@ -1,7 +1,7 @@
 {
-  "name": "@tableland/ts-template",
+  "name": "@tableland/discord-sql-logs",
   "version": "0.0.0",
-  "description": "A template for @tableland TypeScript projects",
+  "description": "A Discord SQL bot @tableland network event logs",
   "publishConfig": {
     "access": "public"
   },
@@ -15,7 +15,6 @@
   "scripts": {
     "build": "npx tsc",
     "start": "node dist/index.js",
-    "create-db": "sqlite3 data/state.db < data/schema.sql",
     "lint": "eslint '**/*.{js,ts}'",
     "lint:fix": "npm run lint -- --fix",
     "prettier": "prettier '**/*.{js,ts,json,md}' --check",
@@ -49,6 +48,7 @@
     "eslint-plugin-promise": "^6.1.1",
     "mocha": "^10.2.0",
     "prettier": "^3.0.3",
+    "tempy": "^3.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },
@@ -57,7 +57,8 @@
     "better-sqlite3": "^9.4.1",
     "discord.js": "^14.14.1",
     "dotenv": "^16.4.5",
-    "ethers": "^5.7.2",
+    "ethereumjs-util": "^7.1.5",
+    "js-sha3": "^0.9.3",
     "sql-formatter": "^15.2.0"
   }
 }
