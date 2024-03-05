@@ -29,7 +29,9 @@ To get started, run `npm install` and then `npm run build` command; this will co
 
 - `DISCORD_BOT_TOKEN`: The Discord bot token comes from creating a bot in the Discord Developer Portal at [https://discord.com/developers/applications](https://discord.com/developers/applications) and getting a token under the `Bot` tab and `Reset Token` button.
 - `DISCORD_WEBHOOK_ID`, `DISCORD_WEBHOOK_TOKEN`: These webhook variables come from the server's URL of the webhook, which you create in the Discord channel settings: `https://discord.com/api/webhooks/DISCORD_WEBHOOK_ID/DISCORD_WEBHOOK_TOKEN`
-- `PRIVATE_KEY`: A private key for creating and writing to a Basin vault, which stores the SQLite database (retrieves it before each run, writes the database to the vault after each run). By default, a vault named `discord_bot_state.db` is created for the private key provided, which also signs subsequent writes to the vault.
+- `PRIVATE_KEY`: A private key for creating and writing to a Basin vault, which stores the SQLite database (retrieves it before each run, writes the database to the vault after each run).
+
+A vault name must be set in the `basin-config.json` file and is then created for the private key provided, which also signs subsequent writes to the vault. For example, this bot uses the `sql_logs_bot_state.db` vault, but keep in mind that **vault names must be unique and cannot be reused**. If you'd like to see the events for this vault, it's owned by `0xc2c3d5FFB6d60FFA48abBAFadCEfDf2bD4FD1905` and [viewable here](https://basin.tableland.xyz/vaults/sql_logs_bot_state.db/events).
 
 Once those are set, you can run the app with `npm run start`, and it will start the bot. First, it runs through initialization steps to fetch events from the vault, and then it begins post the latest SQL logs to the Discord channel's webhook. Note that it only runs once, so it will exit until you run it again manually—e.g., this repo uses a GitHub Action cron job and runs the app every 15 minutes.
 

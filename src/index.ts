@@ -9,7 +9,12 @@ import {
 } from "./db.js";
 import { buildDiscordEmbeds, sendEventsToWebhook } from "./embed.js";
 import { getTblLatestBlocksByChain, getTblNewSqlLogs } from "./tbl.js";
-import { findStateDiff, getBlockRangeForSqlLogs, getEnvVars } from "./utils.js";
+import {
+  findStateDiff,
+  getBasinConfig,
+  getBlockRangeForSqlLogs,
+  getEnvVars,
+} from "./utils.js";
 import { init } from "./init.js";
 
 // Set up Discord client and ensure env vars are set up
@@ -23,10 +28,11 @@ const {
   PRIVATE_KEY,
 } = getEnvVars();
 
+const { vault } = getBasinConfig();
+
 // Initialize the state database with the private key and the path to the
 // SQLite database that gets downloaded from the vault
 const signer = new Signer(PRIVATE_KEY);
-const vault = "discord_bot_state.db";
 const dbPath = join("data", "state.db");
 await init(signer, vault, dbPath);
 

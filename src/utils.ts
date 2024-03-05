@@ -1,3 +1,4 @@
+import { existsSync, readFileSync } from "fs";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -79,6 +80,23 @@ export const getEnvVars = (): Record<string, string> => {
       DISCORD_BOT_TOKEN,
       PRIVATE_KEY,
     };
+  }
+};
+
+// Get basin config file for the `vault` parameter.
+export const getBasinConfig = (): Record<string, string> => {
+  if (!existsSync("basin-config.json")) {
+    throw new Error("basin config file not found");
+  }
+  const data = readFileSync("basin-config.json", "utf8");
+  if (data === "") {
+    throw new Error("basin config file not set");
+  } else {
+    const config = JSON.parse(data);
+    if (config.vault == null || config.vault === "") {
+      throw new Error("vault not set");
+    }
+    return config;
   }
 };
 

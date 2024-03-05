@@ -128,7 +128,10 @@ export async function createVault(
     body: params,
   });
   if (!response.ok) {
-    throw new Error(`request error: ${response.status} ${response.statusText}`);
+    const errorBody = await response.text();
+    throw new Error(
+      `HTTP error: ${response.status} ${response.statusText} - ${errorBody}`
+    );
   }
 
   const data = await response.json();
@@ -183,7 +186,10 @@ export async function getVaults(account: string): Promise<string[]> {
   const url = `${baseUrl}/vaults?${params.toString()}`;
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`HTTP error: ${response.status} ${response.statusText}`);
+    const errorBody = await response.text();
+    throw new Error(
+      `HTTP error: ${response.status} ${response.statusText} - ${errorBody}`
+    );
   }
 
   const data: string[] = await response.json();
