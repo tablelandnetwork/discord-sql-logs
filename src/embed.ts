@@ -77,9 +77,9 @@ export function buildDiscordEmbeds(logs: SqlLogsData[]): EmbedBuilder[] {
           }
         : {
             name: "\n",
-            value: `${bold("Inspect table data:")} ${hyperlink(
+            value: `${bold("Inspect table data on the Studio:")} ${hyperlink(
               "here",
-              `${log.baseUrl}/query?statement=select%20*%20from%20${log.tableName}%20limit%205`
+              `https://studio.tableland.xyz/table/${log.tableName}`
             )}`,
           };
     embedFields.splice(embedFields.length - 1, 0, embedQueryLinkOrError);
