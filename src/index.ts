@@ -49,16 +49,15 @@ client.once(Events.ClientReady, async () => {
     const nextState = await getTblLatestBlocksByChain();
     const diff = findStateDiff(previousState, nextState);
     // If previous state exists, then update data, else insert it
-    if (previousState.length !== 0) {
-      updateStateLatestBlocks(db, diff);
-    } else {
-      insertStateLatestBlocks(db, diff);
-      // Write the latest db state to the vault & exit early since no new logs
-      const signatureBytes = await signer.signFile(dbPath);
-      const signature = bytesToHex(signatureBytes);
-      await writeFileToVault(vault, dbPath, signature);
-      return;
-    }
+    previousState.length !== 0
+      ? updateStateLatestBlocks(db, diff)
+      : insertStateLatestBlocks(db, diff);
+    // TMP: always write the latest db state to the vault to avoid HTTP API 404s
+    // where the cache is expired & the event is not retrieved from cold storage
+    const signatureBytes = await signer.signFile(dbPath);
+    const signature = bytesToHex(signatureBytes);
+    await writeFileToVault(vault, dbPath, signature);
+
     // Get the block ranges for to get new SQL logs
     const blockRanges = getBlockRangeForSqlLogs(previousState, diff);
     const sqlLogs = await getTblNewSqlLogs(blockRanges);
@@ -83,11 +82,6 @@ client.once(Events.ClientReady, async () => {
     const externalEmbeds = buildDiscordEmbeds(sqlLogs.external);
     await sendEventsToWebhook(webhookInternal, internalEmbeds);
     await sendEventsToWebhook(webhookExternal, externalEmbeds);
-
-    // Write the latest db state to the vault as an event
-    const signatureBytes = await signer.signFile(dbPath);
-    const signature = bytesToHex(signatureBytes);
-    await writeFileToVault(vault, dbPath, signature);
   } catch (err) {
     console.error("error executing app: ", err);
   }

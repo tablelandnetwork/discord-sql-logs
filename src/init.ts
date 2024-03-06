@@ -49,9 +49,17 @@ export async function init(
     // If events, then fetch db from vault at latest event
     const event = events[0];
     const { cid } = event as { cid: string };
-    await downloadStateDbFromEvent(cid, dbPath);
-    if (!existsSync(dbPath)) {
-      throw new Error("failed to download state from vault");
+    // Get the latest state from the vault
+    try {
+      await downloadStateDbFromEvent(cid, dbPath);
+    } catch {
+      // TMP: if the download fails, then fallback to creating a db in order to
+      // avoid errors...which happens when vault event cache expires and no data
+      // is fetched from cold storage
+      initDb(dbPath);
     }
+  }
+  if (!existsSync(dbPath)) {
+    throw new Error("failed to download state from vault");
   }
 }
