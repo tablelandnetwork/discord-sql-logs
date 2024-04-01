@@ -53,7 +53,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@tableland/sdk": "^5.2.0",
+    "@tableland/sdk": "^6.0.0",
     "better-sqlite3": "^9.4.1",
     "discord.js": "^14.14.1",
     "dotenv": "^16.4.5",
