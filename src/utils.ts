@@ -1,6 +1,8 @@
 import { existsSync, readFileSync } from "fs";
 import dotenv from "dotenv";
-dotenv.config();
+dotenv.config({
+  path: [".env.local", ".env"], // Load .env.local first, then .env
+});
 
 // Defines the interface for `state` table and associated types.
 export interface State {
@@ -61,6 +63,7 @@ export const getEnvVars = (): Record<string, string> => {
     DISCORD_WEBHOOK_TOKEN_EXTERNAL,
     DISCORD_BOT_TOKEN,
     PRIVATE_KEY,
+    NODE_ENV,
   } = process.env;
   if (
     DISCORD_WEBHOOK_ID_INTERNAL == null ||
@@ -79,16 +82,19 @@ export const getEnvVars = (): Record<string, string> => {
       DISCORD_WEBHOOK_TOKEN_EXTERNAL,
       DISCORD_BOT_TOKEN,
       PRIVATE_KEY,
+      NODE_ENV: NODE_ENV ?? "production", // Default to production
     };
   }
 };
 
 // Get basin config file for the `vault` parameter.
-export const getBasinConfig = (): Record<string, string> => {
-  if (!existsSync("basin-config.json")) {
+export const getBasinConfig = (env: string): Record<string, string> => {
+  const configFile =
+    env === "production" ? "basin-config.json" : "basin-config-dev.json";
+  if (!existsSync(configFile)) {
     throw new Error("basin config file not found");
   }
-  const data = readFileSync("basin-config.json", "utf8");
+  const data = readFileSync(configFile, "utf8");
   if (data === "") {
     throw new Error("basin config file not set");
   } else {

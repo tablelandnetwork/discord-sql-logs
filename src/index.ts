@@ -26,9 +26,10 @@ const {
   DISCORD_WEBHOOK_TOKEN_EXTERNAL,
   DISCORD_BOT_TOKEN,
   PRIVATE_KEY,
+  NODE_ENV,
 } = getEnvVars();
 
-const { vault } = getBasinConfig();
+const { vault } = getBasinConfig(NODE_ENV);
 
 // Initialize the state database with the private key and the path to the
 // SQLite database that gets downloaded from the vault

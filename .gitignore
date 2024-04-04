@@ -6,3 +6,4 @@
 .DS_Store
 .env
 .env.local
+basin-config-dev.json
