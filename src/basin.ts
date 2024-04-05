@@ -180,20 +180,57 @@ export async function writeFileToVault(
 
 // Get the vault for an account address
 export async function getVaults(account: string): Promise<string[]> {
-  const baseUrl = getBaseUrl();
-  const params = new URLSearchParams();
-  params.append("account", account);
-  const url = `${baseUrl}/vaults?${params.toString()}`;
-  const response = await fetch(url);
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(
-      `HTTP error: ${response.status} ${response.statusText} - ${errorBody}`
-    );
+  let retries = 5;
+  let timeout = 1000;
+  let lastError = null;
+
+  while (retries > 0) {
+    try {
+      const baseUrl = getBaseUrl();
+      const params = new URLSearchParams();
+      params.append("account", account);
+      const url = `${baseUrl}/vaults?${params.toString()}`;
+      const response = await fetch(url);
+      if (response.ok) {
+        return await response.json();
+      } else {
+        let errorBody;
+        try {
+          errorBody = await response.json();
+        } catch (error) {
+          errorBody = { error: "non-JSON error response" };
+        }
+        // Track errors for retry or final throw
+        lastError = new Error(
+          `HTTP error: ${response.status} ${response.statusText} - ${JSON.stringify(errorBody)}`
+        );
+        // Make sure to retry the request if the connection is closed
+        // See here for example failure: https://github.com/tablelandnetwork/discord-sql-logs/actions/runs/8562371497/job/23465503410#step:7:20
+        if (
+          response.status === 400 &&
+          errorBody.error !== null &&
+          errorBody.error.match(
+            /connection closed before message completed/
+          ) !== null
+        ) {
+          // Wait and retry with backoff
+          await new Promise((resolve) => setTimeout(resolve, timeout));
+          timeout *= 2;
+          retries -= 1;
+          continue;
+        } else {
+          throw lastError;
+        }
+      }
+    } catch (err: any) {
+      lastError = err;
+      await new Promise((resolve) => setTimeout(resolve, timeout));
+      timeout *= 2;
+      retries -= 1;
+    }
   }
 
-  const data: string[] = await response.json();
-  return data;
+  throw lastError;
 }
 
 // Check if a vault exists in the list of vaults for an account
@@ -224,7 +261,10 @@ export async function getVaultEvents(
   const url = `${baseUrl}/vaults/${vault}/events`;
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`HTTP error: ${response.status} ${response.statusText}`);
+    const errorBody = await response.text();
+    throw new Error(
+      `HTTP error: ${response.status} ${response.statusText} - ${errorBody}`
+    );
   }
 
   const data: Array<Record<string, any>> = await response.json();
@@ -245,7 +285,10 @@ export async function downloadStateDbFromEvent(
       // A 404 likely means the event cache expired and not accessible over API
       throw new Error("event not found or cache expired");
     } else {
-      throw new Error(`HTTP error: ${response.status} ${response.statusText}`);
+      const errorBody = await response.text();
+      throw new Error(
+        `HTTP error: ${response.status} ${response.statusText} - ${errorBody}`
+      );
     }
   }
 
