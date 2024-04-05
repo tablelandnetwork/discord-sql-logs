@@ -1,0 +1,44 @@
+# Used only on manual triggers in case Tableland supported chains are altered,
+# thus, resulting in the previous vault data having chains that should not be
+# used. It's a pseudo-migration because it just creates a fresh db that gets
+# written to the vault.
+name: Migrate vault data
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Build app
+        run: |
+          npm run build
+      - name: Run vault migration
+        run: |
+          npm run migrate
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_WEBHOOK_ID_INTERNAL: ${{ secrets.DISCORD_WEBHOOK_ID_INTERNAL }}
+          DISCORD_WEBHOOK_TOKEN_INTERNAL: ${{ secrets.DISCORD_WEBHOOK_TOKEN_INTERNAL }}
+          DISCORD_WEBHOOK_ID_EXTERNAL: ${{ secrets.DISCORD_WEBHOOK_ID_EXTERNAL }}
+          DISCORD_WEBHOOK_TOKEN_EXTERNAL: ${{ secrets.DISCORD_WEBHOOK_TOKEN_EXTERNAL }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}

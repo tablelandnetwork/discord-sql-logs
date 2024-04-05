@@ -26,15 +26,18 @@ const {
   DISCORD_WEBHOOK_TOKEN_EXTERNAL,
   DISCORD_BOT_TOKEN,
   PRIVATE_KEY,
+  NODE_ENV,
+  RUN_MIGRATION,
 } = getEnvVars();
 
-const { vault } = getBasinConfig();
+const { vault } = getBasinConfig(NODE_ENV);
 
 // Initialize the state database with the private key and the path to the
 // SQLite database that gets downloaded from the vault
 const signer = new Signer(PRIVATE_KEY);
 const dbPath = join("data", "state.db");
-await init(signer, vault, dbPath);
+const runMigration = RUN_MIGRATION === "true";
+await init(signer, vault, dbPath, runMigration);
 
 // Create a connection to the local SQLite database that stores the latest run
 // information and the latest blocks processed by each chain.

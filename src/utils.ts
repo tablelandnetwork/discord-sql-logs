@@ -61,6 +61,8 @@ export const getEnvVars = (): Record<string, string> => {
     DISCORD_WEBHOOK_TOKEN_EXTERNAL,
     DISCORD_BOT_TOKEN,
     PRIVATE_KEY,
+    NODE_ENV,
+    RUN_MIGRATION,
   } = process.env;
   if (
     DISCORD_WEBHOOK_ID_INTERNAL == null ||
@@ -79,16 +81,20 @@ export const getEnvVars = (): Record<string, string> => {
       DISCORD_WEBHOOK_TOKEN_EXTERNAL,
       DISCORD_BOT_TOKEN,
       PRIVATE_KEY,
+      NODE_ENV: NODE_ENV ?? "production", // Default to production
+      RUN_MIGRATION: RUN_MIGRATION ?? "false", // Default to false
     };
   }
 };
 
 // Get basin config file for the `vault` parameter.
-export const getBasinConfig = (): Record<string, string> => {
-  if (!existsSync("basin-config.json")) {
+export const getBasinConfig = (env: string): Record<string, string> => {
+  const configFile =
+    env === "production" ? "basin-config.json" : "basin-config-dev.json";
+  if (!existsSync(configFile)) {
     throw new Error("basin config file not found");
   }
-  const data = readFileSync("basin-config.json", "utf8");
+  const data = readFileSync(configFile, "utf8");
   if (data === "") {
     throw new Error("basin config file not set");
   } else {
