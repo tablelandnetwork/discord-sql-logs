@@ -1,8 +1,6 @@
 import { existsSync, readFileSync } from "fs";
 import dotenv from "dotenv";
-dotenv.config({
-  path: [".env.local", ".env"], // Load .env.local first, then .env
-});
+dotenv.config();
 
 // Defines the interface for `state` table and associated types.
 export interface State {
@@ -64,6 +62,7 @@ export const getEnvVars = (): Record<string, string> => {
     DISCORD_BOT_TOKEN,
     PRIVATE_KEY,
     NODE_ENV,
+    RUN_MIGRATION,
   } = process.env;
   if (
     DISCORD_WEBHOOK_ID_INTERNAL == null ||
@@ -83,6 +82,7 @@ export const getEnvVars = (): Record<string, string> => {
       DISCORD_BOT_TOKEN,
       PRIVATE_KEY,
       NODE_ENV: NODE_ENV ?? "production", // Default to production
+      RUN_MIGRATION: RUN_MIGRATION ?? "false", // Default to false
     };
   }
 };

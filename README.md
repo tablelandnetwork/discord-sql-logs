@@ -25,7 +25,7 @@ First, clone this repo:
 https://github.com/tablelandnetwork/discord-sql-logs
 ```
 
-To get started, run `npm install` and then `npm run build` command; this will compile the package to the `dist` directory. To run the app, you will need to set the following environment variables in your `.env` file, or a `.env.local` can be used for development and will take precedence.
+To get started, run `npm install` and then `npm run build` command; this will compile the package to the `dist` directory. To run the app, you will need to set the following environment variables in your `.env` file:
 
 - `DISCORD_BOT_TOKEN`: The Discord bot token comes from creating a bot in the Discord Developer Portal at [https://discord.com/developers/applications](https://discord.com/developers/applications) and getting a token under the `Bot` tab and `Reset Token` button.
 - `DISCORD_WEBHOOK_ID_<INTERNAL|EXTERNAL>`, `DISCORD_WEBHOOK_TOKEN_<INTERNAL|EXTERNAL>`: These webhook variables come from the server's URL of the webhook, which you create in the Discord channel settings: `https://discord.com/api/webhooks/DISCORD_WEBHOOK_ID/DISCORD_WEBHOOK_TOKEN`. Note that each webhook is for a different channel, and the bot will separate messages based on if they are tables that are part of applications build by the Tableland team.
@@ -38,13 +38,13 @@ Once those are set, you can run the app with `npm run start`, and it will start 
 
 ## Development
 
-Follow the steps in the [Usage](#usage) section to get started. In particular, you can set up a `.env.local` file with a `NODE_ENV=development` variable to run the bot in development mode, which will also run from the `src/` directory instead of the `dist/` directory. The development mode also requires you create a filename called `basin-config-dev.json` in the root directory with the same format as `basin-config.json` but with a different vault name.
+Follow the steps in the [Usage](#usage) section to get started. In particular, you can set up a `.env` file with a `NODE_ENV=development` variable to run the bot in development mode, which will also run from the `src/` directory instead of the `dist/` directory. The development mode also requires you create a filename called `basin-config-dev.json` in the root directory with the same format as `basin-config.json` but with a different vault name.
 
 There are also a few other commands you can use:
 
 - `npm run build`: Compile the package to the `dist` directory.
 - `npm run start`: Start the bot.
-- `npm run dev`: Start the bot with development settings defined in `.env.local` and build from `src/`.
+- `npm run dev`: Start the bot with development settings defined in `.env` and build from `src/`.
 - `npm run lint`: Lint the codebase with `eslint` (along with the `lint:fix` option).
 - `npm run prettier`: Prettify the code format with `prettier` (along with the `prettier:fix` option).
 - `npm run format`: Both lint and format the codebase with `eslint` and `prettier`, also fixing any issues it can.

@@ -23,7 +23,7 @@ const sqlLatestBlocksByChain = (type: ChainType): string => {
       FROM
         system_evm_blocks
       WHERE 
-        chainId != 421613 AND chainId != 5 AND chainId != 3141
+        chainId != 421613 AND chainId != 5 AND chainId != 3141 AND chainId != 420
       GROUP BY
         chainId;
     `);
